@@ -9,6 +9,7 @@ def make_normalization(function):
     bool_normalization_dict = {
         False: 'false',
         True: 'true',
+        None: 'null',
     }
 
     def inner(*args, **kwargs):
