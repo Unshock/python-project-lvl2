@@ -50,8 +50,6 @@ def generate_diff(file_path_1, file_path_2):
 
 @make_normalization
 def make_checking_list(dict1, dict2):
-    #dict1 = dict1
-    #dict2 = dict2
 
     checking_list = []
 
@@ -62,12 +60,14 @@ def make_checking_list(dict1, dict2):
             checking_list.append(element_dict.copy())
 
         else:
-            element_dict = make_element_dict(key, value, source='dict_1', status='-')
+            element_dict = make_element_dict(key, value,
+                                             source='dict_1', status='-')
             checking_list.append(element_dict.copy())
 
     for key, value in dict2.items():
         if dict1.get(key) != value:
-            element_dict = make_element_dict(key, value, source='dict_2', status='+')
+            element_dict = make_element_dict(key, value,
+                                             source='dict_2', status='+')
             checking_list.append(element_dict.copy())
 
     return checking_list
