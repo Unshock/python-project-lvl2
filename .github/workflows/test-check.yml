@@ -14,3 +14,10 @@ jobs:
           make install
       - name: test application
         run: make test
+      - name: Test & publish code coverage
+        uses: paambaati/codeclimate-action@v2.7.5
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID=6a31547eadce6a0a77a2aecb3da830777e0e3f413c718101b113823c97aa0530 }}
+        with:
+          coverageCommand: make test-coverage
+          debug: true

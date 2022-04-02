@@ -15,6 +15,9 @@ package-uninstall:
 package-reinstall:
 	python3 -m pip install --force-reinstall --user dist/*.whl
 
+test-coverage:
+	poetry run pytest --cov=gendiff --cov-report xml
+
 test:
 	poetry run pytest
 
