@@ -29,13 +29,10 @@ def generate_diff(file_path_1, file_path_2):
 
     diff = "{"
     for elem in checking_list:
-        diff += '\n  {} {}: {}'.format(elem['status'], elem['key'], elem['value'])
+        diff += '\n  {} {}: {}'.format(elem['status'],
+                                       elem['key'],
+                                       elem['value'])
     diff += '\n}'
-
-    #for elem in checking_list:
-        #diff['{} {}'.format(elem['status'], elem['key'])] = elem['value']
-
-    #result_diff = json.dumps(diff, indent=2)
 
     return diff
 
@@ -58,7 +55,6 @@ def make_checking_list(dict1, dict2):
             element_dict['status'] = ' '
 
             checking_list.append(element_dict.copy())
-
 
         else:
             element_dict = {}
