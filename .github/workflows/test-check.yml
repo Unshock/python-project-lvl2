@@ -2,7 +2,7 @@ name: test-check
 
 on: push
 jobs:
-  linter-check:
+  tests-check:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo
@@ -15,7 +15,7 @@ jobs:
       - name: test application
         run: make test
       - name: Test & publish code coverage
-        uses: paambaati/codeclimate-action@v2.7.5
+        uses: paambaati/codeclimate-action@v3.0.0
         env:
           CC_TEST_REPORTER_ID: 6a31547eadce6a0a77a2aecb3da830777e0e3f413c718101b113823c97aa0530
         with:
