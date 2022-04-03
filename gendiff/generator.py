@@ -1,4 +1,5 @@
 import json
+import yaml
 
 
 def sort_checking_list(checking_list):
@@ -33,19 +34,13 @@ def make_element_dict(key, value, source=None, status=' '):
     return element_dict
 
 
-def generate_diff(file_path_1, file_path_2):
-    json_1 = json.load(open(file_path_1))
-    json_2 = json.load(open(file_path_2))
-    checking_list = make_checking_list(json_1, json_2)
+def load_file_by_path(file_path):
+    if file_path.endswith('.yaml') or file_path.endswith('.yml'):
+        result = yaml.load(open(file_path), Loader=yaml.CLoader)
+    elif file_path.endswith('json'):
+        result = json.load(open(file_path))
 
-    diff = "{"
-    for elem in checking_list:
-        diff += '\n  {} {}: {}'.format(elem['status'],
-                                       elem['key'],
-                                       elem['value'])
-    diff += '\n}'
-
-    return diff
+    return result
 
 
 @make_normalization
@@ -56,18 +51,28 @@ def make_checking_list(dict1, dict2):
     for key, value in dict1.items():
 
         if dict2.get(key) == value:
-            element_dict = make_element_dict(key, value, source='dict_1')
+            element_dict = make_element_dict(key, value, source='file_1')
             checking_list.append(element_dict.copy())
 
         else:
             element_dict = make_element_dict(key, value,
-                                             source='dict_1', status='-')
+                                             source='file_1', status='-')
             checking_list.append(element_dict.copy())
 
     for key, value in dict2.items():
         if dict1.get(key) != value:
             element_dict = make_element_dict(key, value,
-                                             source='dict_2', status='+')
+                                             source='file_2', status='+')
             checking_list.append(element_dict.copy())
 
     return checking_list
+
+
+def make_formatted_diff(checking_list):
+    diff = "{"
+    for elem in checking_list:
+        diff += '\n  {} {}: {}'.format(elem['status'],
+                                       elem['key'],
+                                       elem['value'])
+    diff += '\n}'
+    return diff

@@ -1,1 +1,1 @@
-from .generator import generate_diff
+from .generate_difference import generate_diff
