@@ -8,3 +8,6 @@ coverage.xml
 .pytest_cache/
 .vim
 .idea
+gendiff/draft.py
+gendiff/file1.json
+gendiff/file4.json
