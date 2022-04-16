@@ -4,6 +4,7 @@ import generator
 import pprint
 import os
 import itertools
+import copy
 
 
 file_path_1 = 'file1.json'
@@ -402,132 +403,189 @@ aaa = """{
 file1={"setting1": "Value 1","setting2": {"KEYYY": {"TUT KEY": 10}},"setting3": True,"setting6": {'a': 'b'},"setting10": True,"setting66": "POOK"}
 file2={"setting1": "Value 1","setting2": {"KEYYY": {"TUT KEY": 100}},"setting3": False,"setting6": None,"setting50": True,"setting66": {'a': 'b'}}
 
-def make_diff(file_1, file_2):
+#################################################################ver_1
+
+def sort_checking_list(checking_list):
+    return checking_list['key'], checking_list['source']
+
+
+def make_normalization(function):
+    bool_normalization_dict = {
+        False: 'false',
+        True: 'true',
+        None: 'null',
+    }
+
+    def inner(*args, **kwargs):
+        result = function(*args, **kwargs)
+        result.sort(key=sort_checking_list)
+        for elem in result:
+            if elem['value'] in bool_normalization_dict:
+                elem['value'] = bool_normalization_dict[elem['value']]
+        return result
+    return inner
+
+
+def make_element_dict(key, value, source=None, status=' '):
+    element_dict = {}
+
+    element_dict['key'] = key
+    element_dict['value'] = value
+    element_dict['source'] = source
+    element_dict['status'] = status
+
+    return element_dict
+
+@make_normalization
+def make_checking_list(dict1, dict2):
+
+    checking_list = []
+
+    for key, value in dict1.items():
+
+        if dict2.get(key) == value:
+            element_dict = make_element_dict(key, value, source='file_1')
+            checking_list.append(element_dict.copy())
+
+        else:
+            element_dict = make_element_dict(key, value,
+                                             source='file_1', status='-')
+            checking_list.append(element_dict.copy())
+
+    for key, value in dict2.items():
+        if dict1.get(key) != value:
+            element_dict = make_element_dict(key, value,
+                                             source='file_2', status='+')
+            checking_list.append(element_dict.copy())
+
+    return checking_list
+
+
+def make_formatted_diff(checking_list):
+    diff = "{"
+    for elem in checking_list:
+        diff += '\n  {} {}: {}'.format(elem['status'],
+                                       elem['key'],
+                                       elem['value'])
+    diff += '\n}'
+    return diff
+
+#################################################################ver_1////////////////////
+
+#################################################################ver_2
+
+def normalize_value(value):
     bool_normalization = {
         False: 'false',
         True: 'true',
         None: 'null',
     }
+    if isinstance(value, dict):
+        return value
+    else:
+        if value in bool_normalization:
+            return bool_normalization[value]
+        return str(value)
+
+
+def make_diff(file_1, file_2):
     diff = []
-    #print(file_1.items())
     for key, value in file_1.items():
-        #print(value)
+        value_file_1 = normalize_value(value)
 
         if key in file_2.keys():
-            print(f' {value} {isinstance(value, dict)}')
-            #print(file_2[key])
-            print(f' {file_2[key]} {isinstance(file_2[key], dict)}')
-            if not isinstance(value, dict):
-                if isinstance(file_2[key], dict):
-                    if value in bool_normalization.keys():
-                        value_file_1 = bool_normalization[value]
-                    else:
-                        value_file_1 = value
-                    value_file_2 = file_2[key]
-                    diff.append({'name': key, 'meta': {'status': 'updated, val-dict', },
+            value_file_2 = normalize_value(file_2[key])
+
+            if not isinstance(value_file_1, dict):
+                if isinstance(value_file_2, dict):
+                    diff.append({'name': key, 'status': 'updated',
                                  'value': (value_file_1, value_file_2)})
                 else:
-                    if value in bool_normalization.keys():
-                        value_file_1 = bool_normalization[value]
-                    else:
-                        value_file_1 = value
-                    if file_2[key] in bool_normalization.keys():
-                        value_file_2 = bool_normalization[file_2[key]]
-                    else:
-                        value_file_2 = file_2[key]
                     if value_file_1 == value_file_2:
-                        diff.append({'name': key, 'meta': {'status': 'unchanged', },
-                                     'value': value_file_1})
+                        diff.append({'name': key, 'status': 'unchanged', 'value': value_file_1})
                     else:
-                        diff.append({'name': key, 'meta': {'status': 'updated, val-val',},
-                                                       'value': (value_file_1, value_file_2)})
+                        diff.append({'name': key, 'status': 'updated', 'value': (value_file_1, value_file_2)})
             else:
                 if not isinstance(file_2[key], dict):
-                    if file_2[key] in bool_normalization.keys():
-                        value_file_2 = bool_normalization[file_2[key]]
-                    else:
-                        value_file_2 = file_2[key]
-                    value_file_1 = value
-                    diff.append({'name': key, 'meta': {'status': 'updated, dict-val', },
-                                 'value': (value_file_1, value_file_2)})
+                    diff.append({'name': key, 'status': 'updated', 'value': (value_file_1, value_file_2)})
                 else:
-                    diff.append({'name': key, 'meta': {'status': 'updated, need_rec', },
-                                 'value': make_diff(value, file_2[key])})
-
-
+                    diff.append(
+                        {'name': key, 'status': 'updated, needs DFS', 'value': make_diff(value_file_1, value_file_2)})
         else:
 
-            if not isinstance(value, dict):
-                if value in bool_normalization.keys():
-                    value_file_1 = bool_normalization[value]
-                else:
-                    value_file_1 = value
-            else:
-                value_file_1 = value
-            diff.append({'name': key, 'meta': {'status': 'deleted, no recursion',},
-                                                       'value': value_file_1})
+            diff.append({'name': key, 'status': 'deleted', 'value': value_file_1})
 
 
     for key, value in file_2.items():
+        value_file_2 = normalize_value(value)
         if key not in file_1.keys():
-            print('ADDED')
-            if not isinstance(value, dict):
-                if value in bool_normalization.keys():
-                    value_file_2 = bool_normalization[value]
-                else:
-                    value_file_2 = value
-            else:
-                value_file_2 = value
-            diff.append({'name': key, 'meta': {'status': 'added',},
-                                                       'value': value_file_2})
+            diff.append({'name': key, 'status': 'added', 'value': value_file_2})
 
     diff.sort(key=lambda node: node['name'])
     return diff
 
-pprint.pprint(make_diff(file1, file2))
 
-def print_simple_tree(tree, depth=0):
-    print(tree)
-    listok = ''
+def print_value(key, value, depth=0, status='unchanged'):
+    initial_depth = depth
+    def inner(key, value,depth=0, status='unchanged'):
+        status_interpretation = {
+            'unchanged': '    ',
+            'deleted': '  - ',
+            'added': '  + ',
+        }
+        status = status_interpretation[status]
+        result = ''
 
-    key, value = list(tree.items())[0]
-    if isinstance(tree, dict):
-        for key, value in list(tree.items()):
-            print(f'depth {depth}')
-            listok = ("{}{}: {}".format(' ' * 4 * depth, key, '{')) + listok
-            print_simple_tree(value, depth + 1)
+        if not isinstance(value, dict):
+            result += ('{}{}{}: {}{}'.format(' ' * 4 * depth, status, str(key), str(value), '\n'))
+        else:
+            result += ('{}{}{}{}'.format(' ' * 4 * depth, status, str(key), ': {\n'))
+            for inner_key, inner_value in list(value.items()):
+                if not isinstance(inner_value, dict):
+                    result += ('{}{}: {}{}'.format(' ' * 4 * (depth + 2), str(inner_key), str(inner_value), '\n'))
+                else:
+                    result += inner(inner_key, inner_value, depth + 1)
 
-    else:
-        listok = ("{}{}: {}".format(' ' * 4 * depth, key, value)) + listok
-        listok += '\n'
-    print(listok)
+            result += ('{}{}'.format(' ' * 4 * (depth + 1), '}'))
+            result += '\n' if depth >= initial_depth else ''
 
-def print_tree(tree, depth=0):
-    #print(tree)
-    #print(tree['meta']['status'] == 'updated, need_rec')
-    if tree['meta']['status'] == 'updated, need_rec':
-        #print(depth)
-        print("{}{}: ".format(' ' * 4 * max(depth, depth + 1), tree['name']))
-        #print(" " * 4 * max(depth, depth + 1),tree["name"], ': ')
-        for elem in tree['value']:
-            print_tree(elem, depth + 1)
-        print(' ' * 4 * max(depth, depth + 1), '}')
-    if tree['meta']['status'] == 'updated, val-val':
-        print(' ' * 4 * max(depth, depth - 1), ' -', tree['name'], ': ', tree['value'][0])
-        print(' ' * 4 * max(depth, depth - 1), ' +', tree['name'], ': ', tree['value'][1])
-    if tree['meta']['status'] == 'deleted, no recursion':
-        print(' ' * 4 * max(depth, depth - 1), ' -', tree['name'], ': ', tree['value'])
-    if tree['meta']['status'] == 'added':
-        print(' ' * 4 * (depth - 1), ' +', tree['name'], ': ', tree['value'])
-    if tree['meta']['status'] == 'unchanged':
-        print(' ' * 4 * max(depth, depth - 1), '  ', tree['name'], ': ', tree['value'])
-    if tree['meta']['status'] == 'updated, dict-val':
-        #print(' ' * 4 * (depth - 1), ' -', tree['name'], ': ', print_simple_tree(tree['value'][0], depth))
-        print(' ' * 4 * (depth - 1), ' -', tree['name'], ': ', print_simple_tree(tree['value'][0], depth))
-        print(' ' * 4 * (depth - 1), ' +', tree['name'], ': ', tree['value'][1])
-    if tree['meta']['status'] == 'updated, val-dict':
-        print(' ' * 4 * (depth - 1), ' -', tree['name'], ': ', tree['value'][0])
-        print(' ' * 4 * (depth - 1), ' +', tree['name'], ': ', tree['value'][1])
+        return result
+    return inner(key, value, depth, status)
+
+
+def make_node_visualization(node, depth=0):
+    initial_depth = depth
+    def inner(node, depth=0, result=''):
+        if node['status'] == 'updated, needs DFS':
+            result += "{}{}: {}".format(' ' * 4 * max(depth, depth + 1), node['name'], '{\n')
+            for elem in node['value']:
+                result += inner(elem, depth + 1)
+
+            result += '{}{}'.format(' ' * 4 * max(depth, depth + 1), '}')
+            result += '\n' if depth >= initial_depth else ''
+
+
+        if node['status'] == 'updated':
+            result += print_value(node['name'], node['value'][0], depth, status='deleted')
+            result += print_value(node['name'], node['value'][1], depth, status='added')
+            return result
+
+        if node['status'] == 'deleted':
+            result += print_value(node['name'], node['value'], depth, status='deleted')
+            return result
+
+        if node['status'] == 'added':
+            result += print_value(node['name'], node['value'], depth, status='added')
+            return result
+
+        if node['status'] == 'unchanged':
+            result += print_value(node['name'], node['value'], depth)
+            return result
+
+        return result
+    return inner(node)
+
+#################################################################ver_2////////////////////
 
 
 try1 = {'meta': {'status': 'updated, need_rec'},
@@ -537,10 +595,24 @@ try1 = {'meta': {'status': 'updated, need_rec'},
              'value': [{'meta': {'status': 'updated, val-val'},
                         'name': 'TUT KEY',
                         'value': (10, 100)}]}]}
-def AAA(list_of_lists):
-    for elem in list_of_lists:
-        print_tree(elem)
+def make_stylish_diff(list_of_nodes):
+    stylish_diff = '{\n'
+    for elem in list_of_nodes:
+        stylish_diff += make_node_visualization(elem)
+    stylish_diff += '}'
+    return stylish_diff
 
-#AAA(make_diff(file1,file2))
+#print_tree(try1)
+#pprint.pprint(make_diff(file_1,file_2))
+#print(AAA(make_diff(file_1,file_2)))
 
-print_simple_tree({'a':{'b':{'c': 'd', 'e': 'j'}}})
+bbb = make_stylish_diff(make_diff(file_1,file_2))
+print(bbb)
+#g = make_diff(file_1,file_2)
+#n = list(map(print_value, g))
+#make_node_visualization()
+
+
+#i = print_value('a',{'b':{'c': 'd', 'e': 'j'}}, status='added')
+#i = print_value('j', status='added')
+#print(i)
