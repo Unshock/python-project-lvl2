@@ -25,6 +25,17 @@ def normalize_value(value):
         return str(value)
 
 
+def make_checking_list_elem(key, status, *args):
+    value = args[0]
+    if len(args) == 2:
+        value = (value, args[1])
+    elem = {'name': key,
+            'status': status,
+            'value': value,
+            }
+    return elem
+
+
 def make_checking_list(file_1, file_2):
     diff = []
     for key, value in file_1.items():
@@ -34,28 +45,23 @@ def make_checking_list(file_1, file_2):
             value_file_2 = normalize_value(file_2[key])
 
             if not isinstance(value_file_1, dict):
-                if isinstance(value_file_2, dict):
-                    diff.append({'name': key, 'status': 'updated',
-                                 'value': (value_file_1, value_file_2)})
-                else:
-                    if value_file_1 == value_file_2:
-                        diff.append({'name': key, 'status': 'unchanged',
-                                     'value': value_file_1})
-                    else:
-                        diff.append({'name': key, 'status': 'updated',
-                                     'value': (value_file_1, value_file_2)})
+                elem = make_checking_list_elem(key, 'unchanged',
+                                               value_file_1) if value_file_1 == value_file_2 else make_checking_list_elem(
+                    key, 'updated', value_file_1, value_file_2)
+                diff.append(elem)
+
             else:
-                if not isinstance(file_2[key], dict):
-                    diff.append({'name': key, 'status': 'updated',
-                                 'value': (value_file_1, value_file_2)})
+                if not isinstance(value_file_2, dict):
+                    diff.append(
+                        make_checking_list_elem(key, 'updated', value_file_1,
+                                                value_file_2))
                 else:
                     diff.append(
                         {'name': key, 'status': 'updated, needs DFS',
                          'value': make_checking_list(value_file_1,
                                                      value_file_2)})
         else:
-            diff.append(
-                {'name': key, 'status': 'deleted', 'value': value_file_1})
+            diff.append(make_checking_list_elem(key, 'deleted', value_file_1))
 
     for key, value in file_2.items():
         value_file_2 = normalize_value(value)
@@ -99,11 +105,25 @@ def make_standardized_value(key, value, depth=0, status='unchanged'):
     return inner(key, value, depth, status)
 
 
+def add_standardized_value(node, depth, status):
+    result = ''
+    if status == 'updated':
+        result += make_standardized_value(node['name'], node['value'][0],
+                                          depth, status='deleted')
+        result += make_standardized_value(node['name'], node['value'][1],
+                                          depth, status='added')
+    else:
+        result += make_standardized_value(node['name'], node['value'],
+                                          depth, status)
+    return result
+
+
 def make_node_visualization(node, depth=0):
     initial_depth = depth
 
     def inner(node, depth=0, result=''):
-        if node['status'] == 'updated, needs DFS':
+        current_node_status = node['status']
+        if current_node_status == 'updated, needs DFS':
             result += "{}{}: {}".format(' ' * 4 * max(depth, depth + 1),
                                         node['name'], '{\n')
             for elem in node['value']:
@@ -111,29 +131,8 @@ def make_node_visualization(node, depth=0):
 
             result += '{}{}'.format(' ' * 4 * max(depth, depth + 1), '}')
             result += '\n' if depth >= initial_depth else ''
-
-        if node['status'] == 'updated':
-            result += make_standardized_value(node['name'], node['value'][0],
-                                              depth, status='deleted')
-            result += make_standardized_value(node['name'], node['value'][1],
-                                              depth, status='added')
-            return result
-
-        if node['status'] == 'deleted':
-            result += make_standardized_value(node['name'], node['value'],
-                                              depth, status='deleted')
-            return result
-
-        if node['status'] == 'added':
-            result += make_standardized_value(node['name'], node['value'],
-                                              depth, status='added')
-            return result
-
-        if node['status'] == 'unchanged':
-            result += make_standardized_value(node['name'], node['value'],
-                                              depth)
-            return result
-
+        else:
+            result = add_standardized_value(node, depth, current_node_status)
         return result
     return inner(node)
 
