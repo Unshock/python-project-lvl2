@@ -25,15 +25,31 @@ def normalize_value(value):
         return str(value)
 
 
-def make_checking_list_elem(key, status, *args):
-    value = args[0]
-    if len(args) == 2:
-        value = (value, args[1])
+def make_checking_list_elem(key, *args, status='undefined'):
+    if status == 'undefined':
+        status = get_status(args[0], args[1])
+
+    if len(args) == 2 and status != 'unchanged':
+        value = (args[0], args[1])
+    else:
+        value = args[0]
+
+    if status == 'updated, needs DFS':
+        value = make_checking_list(args[0], args[1])
     elem = {'name': key,
             'status': status,
             'value': value,
             }
     return elem
+
+
+def get_status(value1, value2):
+    if isinstance(value1, dict) and isinstance(value2, dict):
+        return 'updated, needs DFS'
+    if type(value1) != type(value2):
+        return 'updated'
+    else:
+        return 'unchanged' if value1 == value2 else 'updated'
 
 
 def make_checking_list(file_1, file_2):
@@ -43,30 +59,17 @@ def make_checking_list(file_1, file_2):
 
         if key in file_2.keys():
             value_file_2 = normalize_value(file_2[key])
-
-            if not isinstance(value_file_1, dict):
-                elem = make_checking_list_elem(key, 'unchanged',
-                                               value_file_1) if value_file_1 == value_file_2 else make_checking_list_elem(
-                    key, 'updated', value_file_1, value_file_2)
-                diff.append(elem)
-
-            else:
-                if not isinstance(value_file_2, dict):
-                    diff.append(
-                        make_checking_list_elem(key, 'updated', value_file_1,
-                                                value_file_2))
-                else:
-                    diff.append(
-                        {'name': key, 'status': 'updated, needs DFS',
-                         'value': make_checking_list(value_file_1,
-                                                     value_file_2)})
+            diff.append(
+                make_checking_list_elem(key, value_file_1, value_file_2))
         else:
-            diff.append(make_checking_list_elem(key, 'deleted', value_file_1))
+            diff.append(
+                make_checking_list_elem(key, value_file_1, status='deleted'))
 
     for key, value in file_2.items():
         value_file_2 = normalize_value(value)
         if key not in file_1.keys():
-            diff.append({'name': key, 'status': 'added', 'value': value_file_2})
+            diff.append(
+                make_checking_list_elem(key, value_file_2, status='added'))
 
     diff.sort(key=lambda node: node['name'])
     return diff
