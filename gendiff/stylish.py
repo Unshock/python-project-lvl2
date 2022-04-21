@@ -1,8 +1,3 @@
-
-
-
-
-
 def make_standardized_value(key, value, depth=0, status='unchanged'):
     initial_depth = depth
 
