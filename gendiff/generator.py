@@ -22,7 +22,7 @@ def normalize_value(value):
     else:
         if value in bool_normalization:
             return bool_normalization[value]
-        return str(value)
+        return value
 
 
 def make_checking_list_elem(key, *args, status='undefined'):
@@ -36,6 +36,7 @@ def make_checking_list_elem(key, *args, status='undefined'):
 
     if status == 'updated, needs DFS':
         value = make_checking_list(args[0], args[1])
+
     elem = {'name': key,
             'status': status,
             'value': value,
@@ -56,7 +57,6 @@ def make_checking_list(file_1, file_2):
     diff = []
     for key, value in file_1.items():
         value_file_1 = normalize_value(value)
-
         if key in file_2.keys():
             value_file_2 = normalize_value(file_2[key])
             diff.append(
