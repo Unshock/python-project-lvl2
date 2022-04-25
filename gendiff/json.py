@@ -33,20 +33,19 @@ def make_tree_value(tree_value, depth=0, last_in_list=False):
     return result
 
 
-def make_statused_node(key, value, depth=0, status='unchanged'):
+def make_node(key, value, depth=0, status='unchanged'):
+    if status == 'updated':
+        result = make_node(key, value[0], depth=depth,
+                                    status='deleted') + ',\n'
+        result += make_node(key, value[1], depth=depth, status='added')
+        return result
     result = get_normalized_key(key, status=status, depth=depth)
     result += '{}'.format(get_normalized_value(value, depth + 1))
     return result
 
 
 def make_result(node, depth, last_in_list=False):
-    if node['status'] == 'updated':
-        result = make_statused_node(node['name'], node['value'][0],
-                                    depth=depth, status='deleted') + ',\n'
-        result += make_statused_node(node['name'], node['value'][1],
-                                     depth=depth, status='added')
-    else:
-        result = make_statused_node(node['name'], node['value'],
+    result = make_node(node['name'], node['value'],
                                     depth=depth, status=node['status'])
     result += ',\n' if last_in_list is False else '\n'
     return result
