@@ -7,7 +7,6 @@ def load_file_by_path(file_path):
         result = yaml.load(open(file_path), Loader=yaml.CLoader)
     elif file_path.endswith('json'):
         result = json.load(open(file_path))
-
     return result
 
 

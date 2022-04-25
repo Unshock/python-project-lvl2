@@ -5,5 +5,5 @@
 [![Test Coverage](https://api.codeclimate.com/v1/badges/dc7cb1754db6a42ae472/test_coverage)](https://codeclimate.com/github/Unshock/python-project-lvl2/test_coverage)
 #### Installation and Demo:
 [![asciicast](https://asciinema.org/a/2PgFE4iL2xzLrZznVYVMy86TY.svg)](https://asciinema.org/a/2PgFE4iL2xzLrZznVYVMy86TY)
-[![asciicast](https://asciinema.org/a/Jqhyuimlf7BXBXxlCYpmYZaX9.svg)](https://asciinema.org/a/Jqhyuimlf7BXBXxlCYpmYZaX9)
-[![asciicast](https://asciinema.org/a/Y7bPyB4mVj1uIrpHo3yM85XLA.svg)](https://asciinema.org/a/Y7bPyB4mVj1uIrpHo3yM85XLA)
+[![asciicast](https://asciinema.org/a/LzHjxmcotsUSIhpFAQSSiY0yS.svg)](https://asciinema.org/a/LzHjxmcotsUSIhpFAQSSiY0yS)
+[![asciicast](https://asciinema.org/a/fAMFPHHzbLOcmgaWwPfOb9wor.svg)](https://asciinema.org/a/fAMFPHHzbLOcmgaWwPfOb9wor)

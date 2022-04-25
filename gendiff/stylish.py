@@ -48,17 +48,17 @@ def make_node_visualization(node, depth=0):
     initial_depth = depth
 
     def inner(node, depth=0, result=''):
-        current_node_status = node['status']
-        if current_node_status == 'updated, needs DFS':
-            result += "{}{}: {}".format(' ' * 4 * max(depth, depth + 1),
+        status = node['status']
+        if status == 'updated, needs DFS':
+            result += "{}{}: {}".format(' ' * 4 * (depth + 1),
                                         node['name'], '{\n')
             for elem in node['value']:
                 result += inner(elem, depth + 1)
 
-            result += '{}{}'.format(' ' * 4 * max(depth, depth + 1), '}')
+            result += '{}{}'.format(' ' * 4 * (depth + 1), '}')
             result += '\n' if depth >= initial_depth else ''
         else:
-            result = add_standardized_value(node, depth, current_node_status)
+            result = add_standardized_value(node, depth, status)
         return result
     return inner(node)
 
