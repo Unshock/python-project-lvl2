@@ -18,13 +18,11 @@ def get_normalized_key(key, status='unchanged', **kwargs):
 def get_normalized_value(value, depth, style='slylish', indent=4):
     if isinstance(value, dict):
         return make_tree_value(value, depth, style=style, indent=indent)
-    else:
-        if not isinstance(value, str) or\
-                value in ['false', 'true', 'null'] or\
-                style == 'stylish':
-            return str(value)
-        else:
-            return '"{}"'.format(str(value))
+    if not isinstance(value, str) or\
+            value in ['false', 'true', 'null'] or\
+            style == 'stylish':
+        return str(value)
+    return '"{}"'.format(str(value))
 
 
 def make_tree_value(tree_value, depth=0, style='slylish', indent=4):
@@ -63,7 +61,11 @@ def make_node(key, value, **kwargs):
     return result
 
 
-def make_result(node, depth, last_in_list=False, style='slylish', indent=4):
+def make_result(node, depth, **kwargs):
+    last_in_list = kwargs['last_in_list']
+    style = kwargs['style']
+    indent = kwargs['indent']
+
     result = make_node(node['name'], node['value'],
                        depth=depth, status=node['status'],
                        style=style, indent=indent)
@@ -72,7 +74,7 @@ def make_result(node, depth, last_in_list=False, style='slylish', indent=4):
 
 
 def make_diff(list_of_nodes_with_parameters, style='stylish', indent=4):
-    def inner(list, depth=1, style='stylish', indent='  '):
+    def inner(list, depth=1, style='stylish', indent=4):
         result = ''
         for node in list:
             last_in_list = True if list.index(node) == len(list) - 1\
@@ -85,7 +87,8 @@ def make_diff(list_of_nodes_with_parameters, style='stylish', indent=4):
                 result += ' ' * indent * depth + '}'
                 result += ',\n' if last_in_list is False else '\n'
             else:
-                result += make_result(node, depth, last_in_list, style=style,
+                result += make_result(node, depth, last_in_list=last_in_list,
+                                      style=style,
                                       indent=indent)
         return result
     result = inner(list_of_nodes_with_parameters, style=style, indent=indent)
