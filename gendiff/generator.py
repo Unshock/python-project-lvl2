@@ -12,6 +12,7 @@ def load_file_by_path(file_path):
 
 def normalize_value(value):
     bool_normalization = {
+        '0': '0',
         False: 'false',
         True: 'true',
         None: 'null',
