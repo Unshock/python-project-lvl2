@@ -11,8 +11,7 @@ def load_file_by_path(file_path):
 
 
 def normalize_value(value):
-    bool_normalization = {
-        '0': '0',
+    python_to_js = {
         False: 'false',
         True: 'true',
         None: 'null',
@@ -20,9 +19,8 @@ def normalize_value(value):
     if isinstance(value, dict):
         return value
     else:
-        if value in bool_normalization:
-            return bool_normalization[value]
-        return value
+        return python_to_js[value] if\
+            isinstance(value, bool) or value is None else value
 
 
 def make_checking_list_elem(key, *args, status='undefined'):
