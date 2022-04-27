@@ -45,10 +45,9 @@ def make_checking_list_elem(key, *args, status='undefined'):
 def get_status(value1, value2):
     if isinstance(value1, dict) and isinstance(value2, dict):
         return 'updated, needs DFS'
-    if type(value1) != type(value2):
-        return 'updated'
-    else:
-        return 'unchanged' if value1 == value2 else 'updated'
+    if value1 == value2:
+        return 'unchanged'
+    return 'updated'
 
 
 def make_checking_list(file_1, file_2):
@@ -63,11 +62,9 @@ def make_checking_list(file_1, file_2):
             diff.append(
                 make_checking_list_elem(key, value_file_1, status='deleted'))
 
-    for key, value in file_2.items():
-        value_file_2 = normalize_value(value)
-        if key not in file_1.keys():
-            diff.append(
-                make_checking_list_elem(key, value_file_2, status='added'))
+    for key in (file_2.keys() - file_1.keys()):
+        value_file_2 = normalize_value(file_2[key])
+        diff.append(make_checking_list_elem(key, value_file_2, status='added'))
 
     diff.sort(key=lambda node: node['name'])
     return diff

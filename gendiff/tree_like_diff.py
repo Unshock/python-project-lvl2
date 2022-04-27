@@ -20,9 +20,13 @@ def get_normalized_value(value, depth, style='slylish', indent=4):
         return make_tree_value(value, depth, style=style, indent=indent)
     if not isinstance(value, str) or\
             value in ['false', 'true', 'null'] or\
-            style == 'stylish':
+            style != 'json':
         return str(value)
     return '"{}"'.format(str(value))
+
+
+def put_comma(last_in_list=True, style='json'):
+    return ',' if not last_in_list and style == 'json' else ''
 
 
 def make_tree_value(tree_value, depth=0, style='slylish', indent=4):
@@ -35,9 +39,9 @@ def make_tree_value(tree_value, depth=0, style='slylish', indent=4):
                                      indent=indent)
         result += get_normalized_value(value, depth + 1, style=style,
                                        indent=indent)
-        result += ',\n' if last_in_list is False and style == 'json' else '\n'
+        result += put_comma(last_in_list=last_in_list, style=style) + '\n'
     result += '{}{}'.format(' ' * indent * (depth - 1), '}')
-    result += ',' if last_in_list is False and style == 'json' else ''
+    result += put_comma(style=style)
     return result
 
 
@@ -50,7 +54,7 @@ def make_node(key, value, **kwargs):
     if status == 'updated':
         result = make_node(key, value[0], depth=depth,
                            status='deleted', style=style, indent=indent)
-        result += ',\n' if style == 'json' else '\n'
+        result += put_comma(last_in_list=False, style=style) + '\n'
         result += make_node(key, value[1], depth=depth, status='added',
                             style=style, indent=indent)
         return result
@@ -61,35 +65,25 @@ def make_node(key, value, **kwargs):
     return result
 
 
-def make_result(node, depth, **kwargs):
-    last_in_list = kwargs['last_in_list']
+def make_diff(list_of_nodes_with_parameters, depth=1, **kwargs):
     style = kwargs['style']
     indent = kwargs['indent']
 
-    result = make_node(node['name'], node['value'],
-                       depth=depth, status=node['status'],
-                       style=style, indent=indent)
-    result += ',\n' if last_in_list is False and style == 'json' else '\n'
-    return result
-
-
-def make_diff(list_of_nodes_with_parameters, style='stylish', indent=4):
-    def inner(list, depth=1, style='stylish', indent=4):
-        result = ''
-        for node in list:
-            last_in_list = True if list.index(node) == len(list) - 1\
-                or style == 'stylish' else False
-            if node['status'] == 'updated, needs DFS':
-                result += get_normalized_key(node['name'], depth=depth,
-                                             style=style, indent=indent) + '{\n'
-                result += inner(node['value'], depth + 1, style=style,
+    result = ''
+    for node in list_of_nodes_with_parameters:
+        last_in_list = True if\
+            list_of_nodes_with_parameters.index(node)\
+            == len(list_of_nodes_with_parameters) - 1 else False
+        if node['status'] == 'updated, needs DFS':
+            result += get_normalized_key(node['name'], depth=depth,
+                                         style=style, indent=indent) + '{\n'
+            result += make_diff(node['value'], depth + 1, style=style,
                                 indent=indent)
-                result += ' ' * indent * depth + '}'
-                result += ',\n' if last_in_list is False else '\n'
-            else:
-                result += make_result(node, depth, last_in_list=last_in_list,
-                                      style=style,
-                                      indent=indent)
-        return result
-    result = inner(list_of_nodes_with_parameters, style=style, indent=indent)
-    return '{}{}{}'.format('{\n', result, '}')
+            result += ' ' * indent * depth + '}'
+        else:
+            result += make_node(node['name'], node['value'],
+                                depth=depth, status=node['status'],
+                                style=style, indent=indent)
+
+        result += put_comma(last_in_list=last_in_list, style=style) + '\n'
+    return result

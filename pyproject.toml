@@ -1,8 +1,14 @@
 [tool.poetry]
 name = "hexlet-code"
 version = "0.1.0"
-description = ""
-authors = ["Nedashkovsky <Nedashkovsky@ymail.com>"]
+description = "Program that visualizes differences between two JSON or YAML files"
+authors = ["Victor Nedashkovskiy <nevial@bk.ru>"]
+repository = 'https://github.com/Unshock/python-project-lvl2'
+classifiers = [
+    "License :: Freeware",
+    "Programming Language :: Python",
+    "Topic :: Utilities"
+]
 packages = [
     { include = "gendiff" }
 ]
@@ -13,11 +19,9 @@ gendiff = "gendiff.scripts.gendiff:main"
 [tool.poetry.dependencies]
 python = "^3.8"
 pytest-cov = "^3.0.0"
-PyYAML = "^6.0"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^4.0.1"
-numpy = "^1.22.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
