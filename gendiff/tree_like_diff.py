@@ -29,12 +29,15 @@ def put_comma(last_in_list=True, style='json'):
     return ',' if not last_in_list and style == 'json' else ''
 
 
+def is_last_in_list(elem, list_):
+    return False if list_.index(elem) < (len(list_) - 1) else True
+
+
 def make_tree_value(tree_value, depth=0, style='slylish', indent=4):
     result = '{\n'
     list_of_values = list(tree_value.items())
     for key, value in list_of_values:
-        last_in_list = False if list_of_values.index((key, value)) < len(
-            list_of_values) - 1 else True
+        last_in_list = is_last_in_list((key, value), list_of_values)
         result += get_normalized_key(key, depth=depth, style=style,
                                      indent=indent)
         result += get_normalized_value(value, depth + 1, style=style,
@@ -71,9 +74,7 @@ def make_diff(list_of_nodes_with_parameters, depth=1, **kwargs):
 
     result = ''
     for node in list_of_nodes_with_parameters:
-        last_in_list = True if\
-            list_of_nodes_with_parameters.index(node)\
-            == len(list_of_nodes_with_parameters) - 1 else False
+        last_in_list = is_last_in_list(node, list_of_nodes_with_parameters)
         if node['status'] == 'updated, needs DFS':
             result += get_normalized_key(node['name'], depth=depth,
                                          style=style, indent=indent) + '{\n'
