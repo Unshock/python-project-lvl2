@@ -33,8 +33,14 @@ def is_last_in_list(elem, list_):
     return False if list_.index(elem) < (len(list_) - 1) else True
 
 
+def make_line_break(indent=4):
+    if indent > 0:
+        return '\n'
+    return ''
+
+
 def make_tree_value(tree_value, depth=0, style='slylish', indent=4):
-    result = '{\n'
+    result = '{' + make_line_break(indent=indent)
     list_of_values = list(tree_value.items())
     for key, value in list_of_values:
         last_in_list = is_last_in_list((key, value), list_of_values)
@@ -42,7 +48,8 @@ def make_tree_value(tree_value, depth=0, style='slylish', indent=4):
                                      indent=indent)
         result += get_normalized_value(value, depth + 1, style=style,
                                        indent=indent)
-        result += put_comma(last_in_list=last_in_list, style=style) + '\n'
+        result += put_comma(last_in_list=last_in_list, style=style)
+        result += make_line_break(indent=indent)
     result += '{}{}'.format(' ' * indent * (depth - 1), '}')
     result += put_comma(style=style)
     return result
@@ -57,7 +64,8 @@ def make_node(key, value, **kwargs):
     if status == 'updated':
         result = make_node(key, value[0], depth=depth,
                            status='deleted', style=style, indent=indent)
-        result += put_comma(last_in_list=False, style=style) + '\n'
+        result += put_comma(last_in_list=False, style=style)
+        result += make_line_break(indent=indent)
         result += make_node(key, value[1], depth=depth, status='added',
                             style=style, indent=indent)
         return result
@@ -77,7 +85,8 @@ def make_diff(list_of_nodes_with_parameters, depth=1, **kwargs):
         last_in_list = is_last_in_list(node, list_of_nodes_with_parameters)
         if node['status'] == 'updated, needs DFS':
             result += get_normalized_key(node['name'], depth=depth,
-                                         style=style, indent=indent) + '{\n'
+                                         style=style, indent=indent) + '{'
+            result += make_line_break(indent=indent)
             result += make_diff(node['value'], depth + 1, style=style,
                                 indent=indent)
             result += ' ' * indent * depth + '}'
@@ -86,5 +95,6 @@ def make_diff(list_of_nodes_with_parameters, depth=1, **kwargs):
                                 depth=depth, status=node['status'],
                                 style=style, indent=indent)
 
-        result += put_comma(last_in_list=last_in_list, style=style) + '\n'
+        result += put_comma(last_in_list=last_in_list, style=style)
+        result += make_line_break(indent=indent)
     return result
