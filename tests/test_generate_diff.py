@@ -1,7 +1,6 @@
 from gendiff.scripts.gendiff import generate_diff
 
 
-
 def test_generate_diff_1(make_json_file_path_1,
                          make_json_file_path_2, make_result_file_path_1):
     result = generate_diff(make_json_file_path_1, make_json_file_path_2)
@@ -51,7 +50,7 @@ def test_generate_diff_7(make_yaml_file_path_3,
                          make_yaml_file_path_4, make_result_file_path_3):
     result = generate_diff(make_yaml_file_path_3, make_yaml_file_path_4)
     expected_result = make_result_file_path_3
-    with open('tests/fixtures/test_result_3.txt', 'r') as diff:
+    with open(expected_result, 'r') as diff:
         assert result == diff.read()
 
 
