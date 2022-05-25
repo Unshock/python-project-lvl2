@@ -1,13 +1,4 @@
-import json
-import yaml
 
-
-def load_file_by_path(file_path):
-    if file_path.endswith('.yaml') or file_path.endswith('.yml'):
-        result = yaml.load(open(file_path), Loader=yaml.CLoader)
-    elif file_path.endswith('json'):
-        result = json.load(open(file_path))
-    return result
 
 
 def normalize_value(value):
@@ -68,3 +59,6 @@ def make_checking_list(file_1, file_2):
 
     diff.sort(key=lambda node: node['name'])
     return diff
+
+
+
