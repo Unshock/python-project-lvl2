@@ -1,6 +1,6 @@
 from gendiff.scripts.gendiff import generate_diff
 from gendiff.generate_difference import load_file_by_path as load
-from gendiff.generator import make_checking_list
+from gendiff.generator import build
 
 
 def test_generate_diff_1(make_json_file_path_1,
@@ -86,7 +86,7 @@ def test_generate_diff_11(make_json_file_path_3,
                           make_result_file_path_7):
     file_1 = load(make_json_file_path_3)
     file_2 = load(make_json_file_path_4)
-    result = make_checking_list(file_1, file_2)
+    result = build(file_1, file_2)
     expected_result = make_result_file_path_7
     with open(expected_result, 'r') as diff:
         assert result == diff.read()

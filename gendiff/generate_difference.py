@@ -24,4 +24,4 @@ import pprint
 
 file_1 = load_file_by_path('/home/victor/python/python-project-lvl2/tests/fixtures/file3.json')
 file_2 = load_file_by_path('/home/victor/python/python-project-lvl2/tests/fixtures/file4.json')
-pprint.pprint(generator.make_checking_list(file_1, file_2), indent=1)
+pprint.pprint(generator.build(file_1, file_2), indent=1)
