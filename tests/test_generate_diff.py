@@ -64,7 +64,7 @@ def test_generate_diff_8(make_yaml_file_path_3, make_result_file_path_4):
 def test_generate_diff_9(make_yaml_file_path_3,
                          make_json_file_path_4, make_result_file_path_5):
     result = generate_diff(make_yaml_file_path_3, make_json_file_path_4,
-                           format='plain')
+                           formatter='plain')
     expected_result = make_result_file_path_5
     with open(expected_result, 'r') as diff:
         assert result == diff.read()
@@ -73,7 +73,7 @@ def test_generate_diff_9(make_yaml_file_path_3,
 def test_generate_diff_10(make_yaml_file_path_3,
                           make_json_file_path_4, make_result_file_path_6):
     result = generate_diff(make_yaml_file_path_3, make_json_file_path_4,
-                           format='json')
+                           formatter='json')
     expected_result = make_result_file_path_6
     with open(expected_result, 'r') as diff:
         assert result == diff.read()
