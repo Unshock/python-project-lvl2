@@ -36,7 +36,7 @@
                     "type": "added",
                     "value": {
                         "key5": "value5"
-                        }
+                    }
                 },
                 {
                     "key": "setting6",
@@ -46,13 +46,13 @@
                             "key": "doge",
                             "type": "nested",
                             "children": [
-                                    {
+                                {
                                     "key": "wow",
                                     "type": "changed",
                                     "value1": "",
                                     "value2": "so much"
-                                    }
-                                ]
+                                }
+                            ]
                         },
                         {
                             "key": "key",
