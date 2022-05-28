@@ -30,7 +30,7 @@ def make_plain_diff(json_diff):
     return result
 
 
-def iter_(json_diff):
+def iter_(json_diff):  # noqa: C901
     def inner(diff, path_name=""):
         children = diff.get("children")
         value = to_str(diff.get("value"))

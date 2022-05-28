@@ -32,7 +32,7 @@ def to_str(value1, depth):
     return normalize_value(value1)
 
 
-def iter_(node, depth=0):
+def iter_(node, depth=0):  # noqa: C901
     children = node.get('children')
     indent = build_indent(depth)
     formatted_value = to_str(node.get('value'), depth)
@@ -44,20 +44,20 @@ def iter_(node, depth=0):
         result = '\n'.join(lines)
         return f'{{\n{result}\n}}'
 
-    if node['type'] == 'nested':
+    elif node['type'] == 'nested':
         lines = map(lambda child: iter_(child, depth + 1), children)
         result = '\n'.join(lines)
         return f"{indent}  {node['key']}: {{\n{result}\n{indent}  }}"
 
-    if node['type'] == 'unchanged':
+    elif node['type'] == 'unchanged':
         return f"{indent}  {node['key']}: {formatted_value}"
 
-    if node['type'] == 'added':
+    elif node['type'] == 'added':
         return f"{indent}+ {node['key']}: {formatted_value}"
 
-    if node['type'] == 'deleted':
+    elif node['type'] == 'deleted':
         return f"{indent}- {node['key']}: {formatted_value}"
 
-    if node['type'] == 'changed':
+    elif node['type'] == 'changed':
         return f"{indent}- {node['key']}: {formatted_value1}\n" \
                f"{indent}+ {node['key']}: {formatted_value2}"
