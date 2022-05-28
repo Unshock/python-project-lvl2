@@ -12,9 +12,9 @@ def normalize_value(value):
         True: "true",
         None: "null",
     }
-    if isinstance(value, str):
-        return f"'{value}'"
-    return python_to_js[value] if value in python_to_js.keys() else value
+    if isinstance(value, bool) or value is None:
+        return python_to_js[value]
+    return f"'{value}'" if isinstance(value, str) else value
 
 
 def to_str(value):
