@@ -14,7 +14,9 @@ def normalize_value(value):
         True: "true",
         None: "null",
     }
-    return python_to_js[value] if value in python_to_js.keys() else value
+    if isinstance(value, bool) or value is None:
+        return python_to_js[value]
+    return value
 
 
 def build_indent(depth):
