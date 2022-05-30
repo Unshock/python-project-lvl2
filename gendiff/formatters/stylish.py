@@ -34,12 +34,36 @@ def to_str(value1, depth):
     return normalize_value(value1)
 
 
-def iter_(node, depth=0):  # noqa: C901
-    children = node.get('children')
+def make_unchanged(indent, key, value):
+    return f"{indent}  {key}: {value}"
+
+
+def make_added(indent, key, value):
+    return f"{indent}+ {key}: {value}"
+
+
+def make_deleted(indent, key, value):
+    return f"{indent}- {key}: {value}"
+
+
+def make_changed(indent, key, value1, value2):
+    return f"{indent}- {key}: {value1}\n{indent}+ {key}: {value2}"
+
+
+def iter_(node, depth=0):
     indent = build_indent(depth)
+    children = node.get('children')
+    key = node.get('key')
     formatted_value = to_str(node.get('value'), depth)
     formatted_value1 = to_str(node.get('value1'), depth)
     formatted_value2 = to_str(node.get('value2'), depth)
+
+    line_builder = {
+        'unchanged': make_unchanged(indent, key, formatted_value),
+        'added': make_added(indent, key, formatted_value),
+        'deleted': make_deleted(indent, key, formatted_value),
+        'changed': make_changed(indent, key, formatted_value1, formatted_value2)
+    }
 
     if node['type'] == 'root':
         lines = map(lambda child: iter_(child, depth), children)
@@ -49,17 +73,7 @@ def iter_(node, depth=0):  # noqa: C901
     elif node['type'] == 'nested':
         lines = map(lambda child: iter_(child, depth + 1), children)
         result = '\n'.join(lines)
-        return f"{indent}  {node['key']}: {{\n{result}\n{indent}  }}"
+        return f"{indent}  {key}: {{\n{result}\n{indent}  }}"
 
-    elif node['type'] == 'unchanged':
-        return f"{indent}  {node['key']}: {formatted_value}"
-
-    elif node['type'] == 'added':
-        return f"{indent}+ {node['key']}: {formatted_value}"
-
-    elif node['type'] == 'deleted':
-        return f"{indent}- {node['key']}: {formatted_value}"
-
-    elif node['type'] == 'changed':
-        return f"{indent}- {node['key']}: {formatted_value1}\n" \
-               f"{indent}+ {node['key']}: {formatted_value2}"
+    else:
+        return line_builder[node['type']]

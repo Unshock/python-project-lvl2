@@ -25,12 +25,23 @@ def to_str(value):
 
 def make_plain_diff(json_diff):
     diff = json.loads(json_diff)
-    result = ''
-    result += iter_(diff)
+    result = iter_(diff)
     return result
 
 
-def iter_(json_diff):  # noqa: C901
+def make_added(path_name, value):
+    return f'Property \'{path_name}\' was added with value: {value}'
+
+
+def make_deleted(path_name):
+    return f'Property \'{path_name}\' was removed'
+
+
+def make_changed(path_name, value1, value2):
+    return f'Property \'{path_name}\' was updated. From {value1} to {value2}'
+
+
+def iter_(json_diff):
     def inner(diff, path_name=""):
         children = diff.get("children")
         value = to_str(diff.get("value"))
@@ -38,29 +49,26 @@ def iter_(json_diff):  # noqa: C901
         value2 = to_str(diff.get("value2"))
         path_name = make_path(diff.get("key"), path_name)
 
+        line_builder = {
+            'unchanged': 'unchanged',
+            'added': make_added(path_name, value),
+            'deleted': make_deleted(path_name),
+            'changed': make_changed(path_name, value1, value2)
+        }
+
         if diff["type"] == "root":
             lines = map(lambda child: inner(child), children)
             result = '\n'.join(lines)
             return f'{result}'
 
-        if diff["type"] == "nested":
+        elif diff["type"] == "nested":
             lines = map(lambda child: inner(child, path_name=path_name),
                         children)
             lines = filter(lambda elem: elem != 'unchanged', lines)
             result = '\n'.join(lines)
             return result
 
-        if diff["type"] == "added":
-            return f'Property \'{path_name}\' was added with value: {value}'
-
-        if diff["type"] == "deleted":
-            return f'Property \'{path_name}\' was removed'
-
-        if diff["type"] == "changed":
-            return f'Property \'{path_name}\' was updated.' \
-                   f' From {value1} to {value2}'
-
-        if diff["type"] == "unchanged":
-            return 'unchanged'
+        else:
+            return line_builder[diff["type"]]
 
     return inner(json_diff)
