@@ -35,5 +35,5 @@ Options could be applied by the commands below:
 
 #### Asciinema demonstrations of install, get visualization and import of the module
 [![asciicast](https://asciinema.org/a/2PgFE4iL2xzLrZznVYVMy86TY.svg)](https://asciinema.org/a/2PgFE4iL2xzLrZznVYVMy86TY)
-[![asciicast](https://asciinema.org/a/LzHjxmcotsUSIhpFAQSSiY0yS.svg)](https://asciinema.org/a/LzHjxmcotsUSIhpFAQSSiY0yS)
+[![asciicast](https://asciinema.org/a/5IrGK1rRG8G58eGOtWr9U4wqi.svg)](https://asciinema.org/a/5IrGK1rRG8G58eGOtWr9U4wqi)
 [![asciicast](https://asciinema.org/a/fAMFPHHzbLOcmgaWwPfOb9wor.svg)](https://asciinema.org/a/fAMFPHHzbLOcmgaWwPfOb9wor)
