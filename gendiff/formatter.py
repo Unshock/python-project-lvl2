@@ -1,12 +1,11 @@
-from gendiff.formatters import plain, stylish
+from gendiff.formatters import plain, stylish, json
 
 
-def set_format(formatter):
-    formats = {
-        'stylish': stylish.make_stylish_diff,
-        'plain': plain.make_plain_diff
-    }
-    if formatter not in formats.keys():
-        raise Exception('There is no such formatter')
-    else:
-        return formats[formatter]
+def formatting(formatter: str):
+    if formatter == 'stylish':
+        return stylish.render_stylish
+    elif formatter == 'plain':
+        return plain.render_plain
+    elif formatter == 'json':
+        return json.render_json
+    raise ValueError(f'Unknown formatter: {formatter}')

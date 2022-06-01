@@ -1,11 +1,5 @@
-import json
-
-
-def make_stylish_diff(diff):
-    diff = json.loads(diff)
-    result = ''
-    result += iter_(diff)
-    return result
+def render_stylish(diff: dict) -> str:
+    return iter_(diff)
 
 
 def normalize_value(value):
@@ -19,11 +13,11 @@ def normalize_value(value):
     return value
 
 
-def build_indent(depth):
+def build_indent(depth: int) -> str:
     return (4 * depth + 2) * " "
 
 
-def to_str(value1, depth):
+def to_str(value1, depth: int):
     if isinstance(value1, dict):
         result = []
         for key, value in value1.items():
@@ -34,23 +28,23 @@ def to_str(value1, depth):
     return normalize_value(value1)
 
 
-def make_unchanged(indent, key, value):
+def make_unchanged(indent, key, value) -> str:
     return f"{indent}  {key}: {value}"
 
 
-def make_added(indent, key, value):
+def make_added(indent, key, value) -> str:
     return f"{indent}+ {key}: {value}"
 
 
-def make_deleted(indent, key, value):
+def make_deleted(indent, key, value) -> str:
     return f"{indent}- {key}: {value}"
 
 
-def make_changed(indent, key, value1, value2):
+def make_changed(indent, key, value1, value2) -> str:
     return f"{indent}- {key}: {value1}\n{indent}+ {key}: {value2}"
 
 
-def iter_(node, depth=0):
+def iter_(node, depth=0) -> str:
     indent = build_indent(depth)
     children = node.get('children')
     key = node.get('key')
@@ -75,5 +69,4 @@ def iter_(node, depth=0):
         result = '\n'.join(lines)
         return f"{indent}  {key}: {{\n{result}\n{indent}  }}"
 
-    else:
-        return line_builder[node['type']]
+    return line_builder[node['type']]

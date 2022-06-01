@@ -1,24 +1,21 @@
-import json
-import yaml
-from gendiff import generator
-from gendiff.formatter import set_format
-
-
-def load_file_by_path(file_path):
-    if file_path.endswith('.yaml') or file_path.endswith('.yml'):
-        result = yaml.load(open(file_path), Loader=yaml.CLoader)
-    elif file_path.endswith('.json'):
-        result = json.load(open(file_path))
-    else:
-        raise Exception('File format is not supported')
-    return result
+import os
+from gendiff import tree
+from gendiff.formatter import formatting
+from gendiff.parse import parse
 
 
 def generate_diff(file_path_1, file_path_2, formatter='stylish'):
-    file_1 = load_file_by_path(file_path_1)
-    file_2 = load_file_by_path(file_path_2)
-    json_diff = generator.build(file_1, file_2)
-    if formatter == 'json':
-        return json_diff
-    styled_diff = set_format(formatter)(json_diff)
+    file_1 = get_data(file_path_1)
+    file_2 = get_data(file_path_2)
+    diff = tree.build(file_1, file_2)
+    styled_diff = formatting(formatter)(diff)
     return styled_diff
+
+
+def get_format(file_path: str) -> str:
+    _, extension = os.path.splitext(file_path)
+    return extension.lower()[1:]
+
+
+def get_data(file_path: str):
+    return parse(open(file_path), get_format(file_path))

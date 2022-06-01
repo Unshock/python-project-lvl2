@@ -1,7 +1,9 @@
+import pytest
+
 from gendiff.scripts.gendiff import generate_diff
-from gendiff.generate_difference import load_file_by_path as load
-from gendiff.formatters.stylish import make_stylish_diff
-from gendiff.generator import build
+from gendiff.generate_difference import get_data
+from gendiff.formatters.stylish import render_stylish
+from gendiff.tree import build
 
 
 def test_generate_diff_1(make_json_file_path_1,
@@ -93,21 +95,34 @@ def test_generate_diff_11(make_yaml_file_path_4,
 
 def test_generate_diff_12(make_json_file_path_3,
                           make_json_file_path_4,
-                          make_result_file_path_7):
-    file_1 = load(make_json_file_path_3)
-    file_2 = load(make_json_file_path_4)
+                          make_result_file_path_8):
+    file_1 = get_data(make_json_file_path_3)
+    file_2 = get_data(make_json_file_path_4)
     result = build(file_1, file_2)
-    expected_result = make_result_file_path_7
+    expected_result = make_result_file_path_8
     with open(expected_result, 'r') as diff:
-        assert result == diff.read()
+        assert result == eval(diff.read())
 
 
 def test_generate_diff_13(make_json_file_path_3,
                           make_json_file_path_4,
                           make_result_file_path_3):
-    file_1 = load(make_json_file_path_3)
-    file_2 = load(make_json_file_path_4)
-    result = make_stylish_diff(build(file_1, file_2))
+    file_1 = get_data(make_json_file_path_3)
+    file_2 = get_data(make_json_file_path_4)
+    result = render_stylish(build(file_1, file_2))
     expected_result = make_result_file_path_3
     with open(expected_result, 'r') as diff:
         assert result == diff.read()
+
+
+def test_generate_diff_14(make_yaml_file_path_4):
+    with pytest.raises(ValueError) as wrong_formatter:
+        generate_diff(make_yaml_file_path_4, make_yaml_file_path_4,
+                      formatter='jsons')
+    assert str(wrong_formatter.value) == 'Unknown formatter: jsons'
+
+
+def test_generate_diff_15(make_result_file_path_1):
+    with pytest.raises(ValueError) as wrong_extension:
+        generate_diff(make_result_file_path_1, make_result_file_path_1)
+    assert str(wrong_extension.value) == 'File format is not supported: txt'

@@ -1,7 +1,8 @@
-import json
+def render_plain(diff: dict) -> str:
+    return iter_(diff)
 
 
-def make_path(node_name, initial_path):
+def make_path(node_name: str, initial_path: str) -> str:
     return '.'.join((initial_path,
                      str(node_name))) if initial_path != '' else str(node_name)
 
@@ -23,45 +24,40 @@ def to_str(value):
     return normalize_value(value)
 
 
-def make_plain_diff(json_diff):
-    diff = json.loads(json_diff)
-    result = iter_(diff)
-    return result
-
-
-def make_added(path_name, value):
+def make_added(path_name, value) -> str:
     return f'Property \'{path_name}\' was added with value: {value}'
 
 
-def make_deleted(path_name):
+def make_deleted(path_name) -> str:
     return f'Property \'{path_name}\' was removed'
 
 
-def make_changed(path_name, value1, value2):
+def make_changed(path_name, value1, value2) -> str:
     return f'Property \'{path_name}\' was updated. From {value1} to {value2}'
 
 
-def iter_(json_diff):
-    def inner(diff, path_name=""):
-        children = diff.get("children")
-        value = to_str(diff.get("value"))
-        value1 = to_str(diff.get("value1"))
-        value2 = to_str(diff.get("value2"))
-        path_name = make_path(diff.get("key"), path_name)
+def iter_(diff: dict) -> str:
+    def inner(node, path_name=""):
+        children = node.get("children")
+        formatted_value = to_str(node.get("value"))
+        formatted_value1 = to_str(node.get("value1"))
+        formatted_value2 = to_str(node.get("value2"))
+        path_name = make_path(node.get("key"), path_name)
 
         line_builder = {
             'unchanged': 'unchanged',
-            'added': make_added(path_name, value),
+            'added': make_added(path_name, formatted_value),
             'deleted': make_deleted(path_name),
-            'changed': make_changed(path_name, value1, value2)
+            'changed': make_changed(path_name,
+                                    formatted_value1, formatted_value2)
         }
 
-        if diff["type"] == "root":
+        if node["type"] == "root":
             lines = map(lambda child: inner(child), children)
             result = '\n'.join(lines)
             return f'{result}'
 
-        elif diff["type"] == "nested":
+        elif node["type"] == "nested":
             lines = map(lambda child: inner(child, path_name=path_name),
                         children)
             lines = filter(lambda elem: elem != 'unchanged', lines)
@@ -69,6 +65,6 @@ def iter_(json_diff):
             return result
 
         else:
-            return line_builder[diff["type"]]
+            return line_builder[node["type"]]
 
-    return inner(json_diff)
+    return inner(diff)

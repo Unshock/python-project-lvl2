@@ -108,3 +108,10 @@ def make_result_file_path_7():
     result_file_path = os.path.join(os.path.dirname(__file__),
                                     FIXTURES_FOLDER, 'test_result_7.txt')
     return result_file_path
+
+
+@pytest.fixture
+def make_result_file_path_8():
+    result_file_path = os.path.join(os.path.dirname(__file__),
+                                    FIXTURES_FOLDER, 'test_result_8.txt')
+    return result_file_path
