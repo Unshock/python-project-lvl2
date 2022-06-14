@@ -1,50 +1,53 @@
 def render_stylish(diff: dict) -> str:
+    """
+    :param diff: standard diff between two files in dict type
+    :return: diff between two files in 'stylish' format in string type
+    """
     return iter_(diff)
 
 
-def normalize_value(value):
-    python_to_js = {
-        False: "false",
-        True: "true",
-        None: "null",
-    }
-    if isinstance(value, bool) or value is None:
-        return python_to_js[value]
-    return value
-
-
 def build_indent(depth: int) -> str:
+    """
+    :param depth: depth of the node or value
+    :return: the indent - a certain number of spaces - that is required for the
+        'stylish' view and depends on the depth
+    """
     return (4 * depth + 2) * " "
 
 
-def to_str(value1, depth: int):
-    if isinstance(value1, dict):
+def to_str(value, depth: int):
+    """
+    :param value: node value in different types
+    :param depth: node depth that is needed to build the indent if value is dict
+    :return: value in json-like type and if value type is dict returns
+        indented value
+    """
+    if isinstance(value, dict):
         result = []
-        for key, value in value1.items():
+        for key, dict_value in value.items():
             result.append(f'{build_indent(depth + 1)}  {key}: '
-                          f'{to_str(value, depth + 1)}')
+                          f'{to_str(dict_value, depth + 1)}')
         result = '\n'.join(result)
         return f"{{\n{result}\n{build_indent(depth)}  }}"
-    return normalize_value(value1)
 
+    if isinstance(value, bool):
+        return 'true' if value else 'false'
 
-def make_unchanged(indent, key, value) -> str:
-    return f"{indent}  {key}: {value}"
+    if value is None:
+        return 'null'
 
-
-def make_added(indent, key, value) -> str:
-    return f"{indent}+ {key}: {value}"
-
-
-def make_deleted(indent, key, value) -> str:
-    return f"{indent}- {key}: {value}"
-
-
-def make_changed(indent, key, value1, value2) -> str:
-    return f"{indent}- {key}: {value1}\n{indent}+ {key}: {value2}"
+    return value
 
 
 def iter_(node, depth=0) -> str:
+    """
+    :param node: node of the diff between data of two files that has 'type' as
+        a required key. Also, node could have 'children', 'key', one or two
+        'values' depending on the type.
+    :param depth: default depth is 0 and could be raised if node must be
+        inspected deeper in recursive way
+    :return: node in string type presented in 'stylish' view
+    """
     indent = build_indent(depth)
     children = node.get('children')
     key = node.get('key')
@@ -52,21 +55,24 @@ def iter_(node, depth=0) -> str:
     formatted_value1 = to_str(node.get('value1'), depth)
     formatted_value2 = to_str(node.get('value2'), depth)
 
-    line_builder = {
-        'unchanged': make_unchanged(indent, key, formatted_value),
-        'added': make_added(indent, key, formatted_value),
-        'deleted': make_deleted(indent, key, formatted_value),
-        'changed': make_changed(indent, key, formatted_value1, formatted_value2)
-    }
-
     if node['type'] == 'root':
         lines = map(lambda child: iter_(child, depth), children)
         result = '\n'.join(lines)
         return f'{{\n{result}\n}}'
 
-    elif node['type'] == 'nested':
+    if node['type'] == 'nested':
         lines = map(lambda child: iter_(child, depth + 1), children)
         result = '\n'.join(lines)
         return f"{indent}  {key}: {{\n{result}\n{indent}  }}"
 
-    return line_builder[node['type']]
+    if node['type'] == 'changed':
+        return f"{indent}- {key}: {formatted_value1}\n" \
+               f"{indent}+ {key}: {formatted_value2}"
+
+    if node['type'] == 'added':
+        return f"{indent}+ {key}: {formatted_value}"
+
+    if node['type'] == 'deleted':
+        return f"{indent}- {key}: {formatted_value}"
+
+    return f"{indent}  {key}: {formatted_value}"  # node type is 'unchanged'

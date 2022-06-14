@@ -2,7 +2,7 @@ def build_diff(data_1, data_2) -> list:
     """
     :param data_1: data of first file to compare
     :param data_2: data of second file to compare
-    :return: list of keys and values of data that are children of main diff
+    :return: list of keys and values of data that are children of root node
     """
     diff = []
     keys = data_1.keys() | data_2.keys()
@@ -46,6 +46,8 @@ def build(data_1, data_2) -> dict:
     :param data_1: data of first file to compare
     :param data_2: data of second file to compare
     :return: difference between first file data and second file data as dict
+     where 'type' is 'root' and 'children' is the list of compared nodes of the
+     first file data and the second file data
     """
     result = {
         "type": "root",
